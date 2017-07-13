@@ -20,6 +20,13 @@ import collections
 import itertools
 import random
 
+# define images and meta-data location
+data_dir = 'Manga109_processed/images'
+
+json_file = 'data.json'
+
+use_gpu = torch.cuda.is_available()
+
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomSizedCrop(224),
@@ -81,19 +88,16 @@ class ImageSet(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
-data_dir = 'Manga109_processed/images'
-
 Manga = collections.namedtuple('Manga', ['title', 'folder_name', 'author'])
 mangas = []
 
-with open('data.json') as data_file:    
+with open(json_file) as data_file:    
     data = json.load(data_file)
 
 for item in data:
     author_name = item.get("Author")
     folder_name = item.get("Folder Name")
     title = item.get("Title")
-
     m = Manga(title = title, folder_name = os.path.join(data_dir, folder_name), author = author_name)
     mangas.append(m)
 
@@ -108,32 +112,23 @@ dirs_by_author = map ( lambda g: ( g[0], map (lambda m: m.folder_name, g[1])), m
 
 files_by_author = map ( lambda g: ( g[0], flatten( map (get_images_from_folder, g[1]))), dirs_by_author)
 
-#print (list(files_by_author))
-
 class_list = []
 for k, v in mangas_by_folder_name.iteritems():
-    #print (k)
-    #print (v.author)
     class_list.append(v.author)
-print (class_list)
+
 class_list.sort()
 class_to_idx = {class_list[i]: i for i in range(len(class_list))}
+
 num_classes = len(class_list)
 
-images = flatten ( 
-    map ( 
-        lambda g: map ( lambda f: (f, class_to_idx[g[0]]), g[1]),
-        files_by_author)
-    )
-
-#print (images)
+images = flatten ( map ( lambda g: map ( lambda f: (f, class_to_idx[g[0]]), g[1]), files_by_author) )
 
 num_images = len(images)
-num_images = num_images // 10
+val_set_count = num_images // 10
 
 random.shuffle(images)
-val_set = ImageSet(images[:num_images], class_list, class_to_idx, transform = data_transforms["val"])
-train_set = ImageSet(images[num_images:], class_list, class_to_idx, transform = data_transforms["train"])
+val_set = ImageSet(images[:val_set_count], class_list, class_to_idx, transform = data_transforms["val"])
+train_set = ImageSet(images[val_set_count:], class_list, class_to_idx, transform = data_transforms["train"])
 
 dsets = {"train" : train_set, "val" : val_set}
 
@@ -144,11 +139,9 @@ dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
 dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
 dset_classes = dsets['train'].classes
 
-use_gpu = torch.cuda.is_available()
-
 print ("Cuda available: ", use_gpu)
 
-def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
+def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25, save_prefix=""):
     since = time.time()
 
     best_model = model
@@ -208,7 +201,10 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model = copy.deepcopy(model)
-
+                if save_prefix != "":
+                    torch.save(model.state_dict(), './author_pred_'+save_prefix+'_'+str(best_acc)+'.pth')
+                else:
+                    torch.save(model.state_dict(), './author_pred_net_'+str(best_acc)+'.pth')
         print()
 
     time_elapsed = time.time() - since
@@ -229,16 +225,55 @@ def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
 
     return optimizer
 
-model_ft = models.resnet18(pretrained=True)
-num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, num_classes)
+#define models for this run
 
-if use_gpu:
-    model_ft = model_ft.cuda()
+def densenet121(num_classes):
+    model = torchvision.models.densenet121(pretrained = True)
+    num_ftrs = model.classifier.in_features
+    model.classifier = nn.Linear(num_ftrs, num_classes)
+    return model
 
-criterion = nn.CrossEntropyLoss()
+def densenet169(num_classes):
+    model = torchvision.models.densenet169(pretrained = True)
+    num_ftrs = model.classifier.in_features
+    model.classifier = nn.Linear(num_ftrs, num_classes)
+    return model
 
-# Observe that all parameters are being optimized
-optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+def resnet34(num_classes):
+    model = torchvision.models.resnet34(pretrained = True)
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, num_classes)
+    return model
 
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=1)
+def resnet50(num_classes):
+    model = torchvision.models.resnet50(pretrained = True)
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, num_classes)
+    return model
+
+model_list = []
+#model_list.append((resnet34, "resnet34"))
+#model_list.append((densenet121, "densenet121"))
+#model_list.append((resnet50, "resnet50"))
+model_list.append((densenet169, "densenet169"))
+
+def train_model_helper(model_ft, criterion, epochs, lr_scheduler, use_gpu, save_prefix = "") :
+    if use_gpu:
+        model_ft = model_ft.cuda()
+
+    
+    # Observe that all parameters are being optimized
+    optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+    #model_ft = train_model(model_ft, criterion, optimizer_ft, lr_scheduler, num_epochs=num_epochs, save_prefix)
+    train_model(model_ft, criterion, optimizer_ft, lr_scheduler, num_epochs=epochs, save_prefix=save_prefix)
+
+def run_model (model_func, num_classes, lr_scheduler, use_gpu, name_prefix, num_epochs, pretrained_flag=True) :
+    model = model_func(num_classes)
+    train_model_helper(model, nn.CrossEntropyLoss(), num_epochs, lr_scheduler, use_gpu, name_prefix)
+
+
+#run the training
+num_epochs = 30
+
+for model_func, name_prefix in model_list:
+    run_model(model_func, num_classes, exp_lr_scheduler, use_gpu, name_prefix, num_epochs, True)
