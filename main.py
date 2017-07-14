@@ -45,7 +45,11 @@ def load_data():
     data_loader.load_data("../Data/Manga109_processed/images"),
     batch_size=batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-    data_loader.load_data("/home/fahadm/DLCV_Final_Project/Data/Manga109_processed/Test"),
+    data_loader.load_data("/home/fahadm/DLCV_Final_Project/Data/Manga109_processed/Test", transform = transforms.Compose([
+    transforms.Scale(400),
+    transforms.CenterCrop(256),
+    transforms.ToTensor(),
+])),
     batch_size=batch_size, shuffle=True, **kwargs)
 
 
@@ -155,9 +159,9 @@ def test_classifier(epoch):
     model.eval()
     test_loss = 0
     correct = 0
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for batch_idx, (data, target) in enumerate(test_loader):
         old_target = target.numpy()
-        target = map_target_to_author(target,train_loader)
+        target = map_target_to_author(target,test_loader)
         if cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data), Variable(target)
@@ -166,7 +170,8 @@ def test_classifier(epoch):
         test_loss += F.nll_loss(output, target, size_average=False).data[0]  # sum up batch loss
         pred = output.data.max(1)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data).cpu().sum()
-        print ("Input " + target)
+
+        print (correct/batch_size*batch_idx)
 
     test_loss /= len(test_loader.dataset)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
@@ -179,15 +184,15 @@ def main(argv):
 
     load_data()
     select_model()
-    # load_model()
-    load_pretrained()
-    test_classifier(0)
+    load_model()
+   # load_pretrained()
+  #  test_classifier(0)
     print ("Training without acquisition")
-    # for epoch in range(1, epochs + 1):
-    #     train_classifier(epoch)
-    #     test_classifier(epoch)
+     for epoch in range(1, epochs + 1):
+         train_classifier(epoch)
+         test_classifier(epoch)
 
-    print("--- %s seconds ---" % (time() - start_time))
+    # print("--- %s seconds ---" % (time() - start_time))
 
 
 if __name__ == '__main__':

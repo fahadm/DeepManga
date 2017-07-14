@@ -1415,5 +1415,111 @@
    "Genre": "fantasy",
    "Pages": 194,
    "Volume in dataset": null
+ },
+ {
+   "Num": 110,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "fairial_garden",
+   "Author": "Sakurano Minene",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ },
+ {
+   "Num": 111,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c004",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ },
+ {
+   "Num": 112,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c005",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ },
+ {
+   "Num": 113,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c006",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ },
+ {
+   "Num": 114,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c002",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ },
+ {
+   "Num": 115,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c003",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ }
+  ,
+ {
+   "Num": 999,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "zenmaijikake_no_tina_v01c001",
+   "Author": "Ayumi Yui",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
+ }
+  ,
+ {
+   "Num": 116,
+   "Cover": "",
+   "Title": "fairial_garden",
+   "Folder Name": "Love_Hina",
+   "Author": "Akamatsu Ken",
+   "Age": "1980's",
+   "Publisher": "Shonen-gahosha",
+   "Target": "young men",
+   "Genre": "fantasy",
+   "Pages": 194,
+   "Volume in dataset": null
  }
 ]

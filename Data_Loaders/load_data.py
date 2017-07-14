@@ -12,8 +12,8 @@ def gs_loader(path):
 
             return img.convert('L')
 
-def load_data(parent_dir):
-    return dset.ImageFolder(root=parent_dir, transform = transforms.ToTensor(), loader=gs_loader)
+def load_data(parent_dir,transform = transforms.ToTensor()):
+    return dset.ImageFolder(root=parent_dir, transform = transform, loader=gs_loader)
 
 
 def load_target_mapping(filename = "mapping.json"):
