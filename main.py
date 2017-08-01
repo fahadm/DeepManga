@@ -52,7 +52,7 @@ def load_data():
     #         transforms.ToTensor(),
     #     ])),
     #     batch_size=batch_size, shuffle=True, **kwargs)
-    loaders, sizes, classes, dsets = data_loader.load_data_from_folder_structure("dev_data", batch_size)
+    loaders, sizes, classes, dsets = data_loader.load_data_from_folder_structure("dev_data", batch_size=batch_size)
     train_loader = loaders["train"]
     test_loader = loaders["val"]
 
