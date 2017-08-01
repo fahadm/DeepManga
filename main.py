@@ -23,7 +23,7 @@ momentum = 0.9
 
 epochs = 30
 
-cuda = False
+cuda = torch.cuda.is_available()
 
 log_interval = 20
 
