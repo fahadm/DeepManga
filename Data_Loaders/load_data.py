@@ -2,8 +2,24 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 from PIL import Image
 import json
+import os
+import torch
 from pprint import pprint
 
+data_transforms = {
+    'train': transforms.Compose([
+        transforms.RandomSizedCrop(256),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+    'val': transforms.Compose([
+        transforms.Scale(256),
+        transforms.CenterCrop(256),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+}
 
 def gs_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
@@ -39,7 +55,13 @@ def load_target_mapping(filename = "mapping.json"):
 
         return  author, invertedMap, authors
 
-
-
-
-
+def load_data_from_folder_structure(parent_dir, transform = data_transforms):
+    data_dir = parent_dir
+    dsets = {x: dset.ImageFolder(os.path.join(data_dir, x), transform[x], loader=gs_loader)
+             for x in ['train', 'val']}
+    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
+                                                   shuffle=True, num_workers=4)
+                    for x in ['train', 'val']}
+    dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
+    dset_classes = dsets['train'].classes
+    return dset_loaders, dset_sizes, dset_classes, dsets

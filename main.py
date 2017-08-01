@@ -41,17 +41,21 @@ def load_data():
     global mapping, inveretedMap, authors
     mapping, inveretedMap, authors = data_loader.load_target_mapping();
 
-    train_loader = torch.utils.data.DataLoader(
-    data_loader.load_data("../Data/Manga109_processed/images"),
-    batch_size=batch_size, shuffle=True, **kwargs)
-    test_loader = torch.utils.data.DataLoader(
-    data_loader.load_data("/home/fahadm/DLCV_Final_Project/Data/Manga109_processed/Test", transform = transforms.Compose([
-    transforms.Scale(400),
-    transforms.CenterCrop(256),
-    transforms.ToTensor(),
-])),
-    batch_size=batch_size, shuffle=True, **kwargs)
+    global sizes, classes, dsets
 
+    # train_loader = torch.utils.data.DataLoader(
+    #     data_loader.load_data("../Data/Manga109_processed/images"),
+    #     batch_size=batch_size, shuffle=True, **kwargs)
+    # test_loader = torch.utils.data.DataLoader(
+    #     data_loader.load_data("/home/fahadm/DLCV_Final_Project/Data/Manga109_processed/Test", transform = transforms.Compose([
+    #         transforms.Scale(400),
+    #         transforms.CenterCrop(256),
+    #         transforms.ToTensor(),
+    #     ])),
+    #     batch_size=batch_size, shuffle=True, **kwargs)
+    loaders, sizes, classes, dsets = data_loader.load_data_from_folder_structure("dev_data")
+    train_loader = loaders["train"]
+    test_loader = loaders["val"]
 
 
 def map_target_to_author(target, loader ):
@@ -86,7 +90,7 @@ def select_model(mode = "classify"):
         criterion = nn.MSELoss()
 
     elif mode == "classify":
-        model = Classify.convclassifier(out_targets=len(mapping))
+        model = Classify.convclassifier(out_targets=len(classes))
         criterion = nn.NLLLoss()
     if cuda:
         model.cuda()
@@ -129,7 +133,7 @@ def train_CAE(epoch):
 def train_classifier(epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-        target = map_target_to_author(target,train_loader)
+        #target = map_target_to_author(target,train_loader)
         if cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data), Variable(target)
@@ -188,9 +192,9 @@ def main(argv):
    # load_pretrained()
   #  test_classifier(0)
     print ("Training without acquisition")
-     for epoch in range(1, epochs + 1):
-         train_classifier(epoch)
-         test_classifier(epoch)
+    for epoch in range(1, epochs + 1):
+        train_classifier(epoch)
+        test_classifier(epoch)
 
     # print("--- %s seconds ---" % (time() - start_time))
 
