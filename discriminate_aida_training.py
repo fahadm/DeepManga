@@ -19,13 +19,17 @@ import json
 import collections
 import itertools
 import random
+import Data_Loaders.load_data as data_loader
+
 
 # define images and meta-data location
-data_dir = 'Manga109_processed/images'
+data_dir = 'dev_data'
 
 json_file = 'data.json'
 
 use_gpu = torch.cuda.is_available()
+
+batch_size = 4
 
 data_transforms = {
     'train': transforms.Compose([
@@ -41,112 +45,115 @@ data_transforms = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
 }
+#
+# def flatten (z):
+#     return [x for y in z for x in y]
+#
+# IMG_EXTENSIONS = [
+#     '.jpg', '.JPG', '.jpeg', '.JPEG',
+#     '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
+# ]
+#
+# def is_image_file(filename):
+#     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
+#
+# def get_images_from_folder(dir):
+#     return filter(lambda f: is_image_file(f), map (lambda p: os.path.join(dir, p), os.listdir(dir)))
+#
+# class ImageSet(torch.utils.data.Dataset):
+#     def __init__(self, imgs, classes, class_to_idx, transform=None, target_transform=None,
+#                  loader=default_loader):
+#         if len(imgs) == 0:
+#             raise(RuntimeError("Got 0 images: \n"
+#                                "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+#         self.imgs = imgs
+#         self.classes = classes
+#         self.class_to_idx = class_to_idx
+#         self.transform = transform
+#         self.target_transform = target_transform
+#         self.loader = loader
+#
+#     def __getitem__(self, index):
+#         """
+#         Args:
+#             index (int): Index
+#         Returns:
+#             tuple: (image, target) where target is class_index of the target class.
+#         """
+#         path, target = self.imgs[index]
+#         img = self.loader(path)
+#         if self.transform is not None:
+#             img = self.transform(img)
+#         if self.target_transform is not None:
+#             target = self.target_transform(target)
+#
+#         return img, target
+#
+#     def __len__(self):
+#         return len(self.imgs)
+#
+# Manga = collections.namedtuple('Manga', ['title', 'folder_name', 'author'])
+# mangas = []
+#
+# with open(json_file) as data_file:
+#     data = json.load(data_file)
+#
+# for item in data:
+#     author_name = item.get("Author")
+#     folder_name = item.get("Folder Name")
+#     title = item.get("Title")
+#     m = Manga(title = title, folder_name = os.path.join(data_dir, folder_name), author = author_name)
+#     mangas.append(m)
+#
+# mangas_by_folder_name = dict()
+# for manga in mangas:
+#     mangas_by_folder_name[manga.folder_name] = manga
+#
+# keyfunc = lambda m: m.author
+# mangas_by_author = itertools.groupby(sorted(mangas, key=keyfunc), keyfunc)
+#
+# dirs_by_author = map ( lambda g: ( g[0], map (lambda m: m.folder_name, g[1])), mangas_by_author)
+#
+# files_by_author = map ( lambda g: ( g[0], flatten( map (get_images_from_folder, g[1]))), dirs_by_author)
+#
+# class_list = ["Aida", "default"]
+# #for k, v in mangas_by_folder_name.iteritems():
+# #    class_list.append(v.author)
+#
+# class_list.sort()
+# class_to_idx = {class_list[i]: i for i in range(len(class_list))}
+#
+# num_classes = len(class_list)
+#
+# #images = flatten ( map ( lambda g: map ( lambda f: (f, class_to_idx[g[0]]), g[1]), files_by_author) )
+# def aida_discrimination(author):
+#     if author == "Aida Mayumi":
+#         return 0
+#     else:
+#         return 1
+#
+# images = flatten ( map ( lambda g: map ( lambda f: (f, aida_discrimination(g[0])), g[1]), files_by_author) )
+#
+# print (list(images))
+#
+# num_images = len(images)
+# val_set_count = num_images // 10
+#
+# random.shuffle(images)
+# val_set = ImageSet(images[:val_set_count], class_list, class_to_idx, transform = data_transforms["val"])
+# train_set = ImageSet(images[val_set_count:], class_list, class_to_idx, transform = data_transforms["train"])
+#
+# dsets = {"train" : train_set, "val" : val_set}
+#
+# dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,
+#                                                shuffle=True, num_workers=4)
+#                 for x in ['train', 'val']}
+#
+# dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
+# dset_classes = dsets['train'].classes
 
-def flatten (z):
-    return [x for y in z for x in y]
-
-IMG_EXTENSIONS = [
-    '.jpg', '.JPG', '.jpeg', '.JPEG',
-    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
-]
-
-def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
-
-def get_images_from_folder(dir):
-    return filter(lambda f: is_image_file(f), map (lambda p: os.path.join(dir, p), os.listdir(dir)))
-
-class ImageSet(torch.utils.data.Dataset):
-    def __init__(self, imgs, classes, class_to_idx, transform=None, target_transform=None,
-                 loader=default_loader):
-        if len(imgs) == 0:
-            raise(RuntimeError("Got 0 images: \n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
-        self.imgs = imgs
-        self.classes = classes
-        self.class_to_idx = class_to_idx
-        self.transform = transform
-        self.target_transform = target_transform
-        self.loader = loader
-
-    def __getitem__(self, index):
-        """
-        Args:
-            index (int): Index
-        Returns:
-            tuple: (image, target) where target is class_index of the target class.
-        """
-        path, target = self.imgs[index]
-        img = self.loader(path)
-        if self.transform is not None:
-            img = self.transform(img)
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
-
-    def __len__(self):
-        return len(self.imgs)
-
-Manga = collections.namedtuple('Manga', ['title', 'folder_name', 'author'])
-mangas = []
-
-with open(json_file) as data_file:    
-    data = json.load(data_file)
-
-for item in data:
-    author_name = item.get("Author")
-    folder_name = item.get("Folder Name")
-    title = item.get("Title")
-    m = Manga(title = title, folder_name = os.path.join(data_dir, folder_name), author = author_name)
-    mangas.append(m)
-
-mangas_by_folder_name = dict()
-for manga in mangas:
-    mangas_by_folder_name[manga.folder_name] = manga
-
-keyfunc = lambda m: m.author
-mangas_by_author = itertools.groupby(sorted(mangas, key=keyfunc), keyfunc)
-
-dirs_by_author = map ( lambda g: ( g[0], map (lambda m: m.folder_name, g[1])), mangas_by_author)
-
-files_by_author = map ( lambda g: ( g[0], flatten( map (get_images_from_folder, g[1]))), dirs_by_author)
-
-class_list = ["Aida", "default"]
-#for k, v in mangas_by_folder_name.iteritems():
-#    class_list.append(v.author)
-
-class_list.sort()
-class_to_idx = {class_list[i]: i for i in range(len(class_list))}
-
-num_classes = len(class_list)
-
-#images = flatten ( map ( lambda g: map ( lambda f: (f, class_to_idx[g[0]]), g[1]), files_by_author) )
-def aida_discrimination(author):
-    if author == "Aida Mayumi":
-        return 0
-    else:
-        return 1
-
-images = flatten ( map ( lambda g: map ( lambda f: (f, aida_discrimination(g[0])), g[1]), files_by_author) )
-
-print (list(images))
-
-num_images = len(images)
-val_set_count = num_images // 10
-
-random.shuffle(images)
-val_set = ImageSet(images[:val_set_count], class_list, class_to_idx, transform = data_transforms["val"])
-train_set = ImageSet(images[val_set_count:], class_list, class_to_idx, transform = data_transforms["train"])
-
-dsets = {"train" : train_set, "val" : val_set}
-
-dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
-                                               shuffle=True, num_workers=4)
-                for x in ['train', 'val']}
-
-dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
-dset_classes = dsets['train'].classes
+dset_loaders, dset_sizes, dset_classes, dsets = data_loader.load_data_from_folder_structure("dev_data", batch_size=batch_size, use_three_channels=True)
+num_classes = 2
 
 print ("Cuda available: ", use_gpu)
 
