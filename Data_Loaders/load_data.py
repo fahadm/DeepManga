@@ -55,11 +55,11 @@ def load_target_mapping(filename = "mapping.json"):
 
         return  author, invertedMap, authors
 
-def load_data_from_folder_structure(parent_dir, transform = data_transforms):
+def load_data_from_folder_structure(parent_dir, transform = data_transforms, batch_size = 4):
     data_dir = parent_dir
     dsets = {x: dset.ImageFolder(os.path.join(data_dir, x), transform[x], loader=gs_loader)
              for x in ['train', 'val']}
-    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
+    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,
                                                    shuffle=True, num_workers=4)
                     for x in ['train', 'val']}
     dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}

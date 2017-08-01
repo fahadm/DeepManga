@@ -17,7 +17,6 @@ from torchvision.utils import save_image
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-
 batch_size = 4
 lr = 3E-4
 momentum = 0.9
@@ -53,7 +52,7 @@ def load_data():
     #         transforms.ToTensor(),
     #     ])),
     #     batch_size=batch_size, shuffle=True, **kwargs)
-    loaders, sizes, classes, dsets = data_loader.load_data_from_folder_structure("dev_data")
+    loaders, sizes, classes, dsets = data_loader.load_data_from_folder_structure("dev_data", batch_size)
     train_loader = loaders["train"]
     test_loader = loaders["val"]
 
