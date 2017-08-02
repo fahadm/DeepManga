@@ -17,7 +17,7 @@ from torchvision.utils import save_image
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-batch_size = 4
+batch_size = 32
 lr = 3E-4
 momentum = 0.9
 
@@ -150,7 +150,7 @@ def train_classifier(epoch):
     # ===================log========================
     print('epoch [{}/{}], loss:{:.4f}'
           .format(epoch + 1, epochs, loss.data[0]))
-    if epoch % 1 == 0:
+    if epoch % 5 == 0:
         torch.save(model.state_dict(), './conv_autoencoder.pth')
 
 
@@ -164,7 +164,7 @@ def test_classifier(epoch):
     correct = 0
     for batch_idx, (data, target) in enumerate(test_loader):
         old_target = target.numpy()
-        target = map_target_to_author(target,test_loader)
+       # target = map_target_to_author(target,test_loader)
         if cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data), Variable(target)

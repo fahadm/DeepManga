@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Remote_cremers29">
+    <serverData>
+      <paths name="Remote_cremers29">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/DLCV/Deep_Manga_Classify/Deep_Manga" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
