@@ -69,3 +69,15 @@ def load_data_from_folder_structure(parent_dir, transform = data_transforms, bat
     dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
     dset_classes = dsets['train'].classes
     return dset_loaders, dset_sizes, dset_classes, dsets
+
+def load_eval_data_from_folder_structure(parent_dir, transform = data_transforms['val'], batch_size = 4, use_three_channels = False):
+    data_dir = parent_dir
+    if use_three_channels:
+        data_set = dset.ImageFolder(data_dir, transform)
+    else:
+        data_set = dset.ImageFolder(data_dir, transform, loader=gs_loader)
+
+    dset_loader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, num_workers=4)
+    dset_size = len(data_set)
+    dset_classes = data_set.classes
+    return dset_loader, dset_size, dset_classes, data_set
